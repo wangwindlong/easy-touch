@@ -16,7 +16,7 @@
 
 package xyz.template.material.menu.utils;
 
-import com.google.api.client.util.IOUtils;
+//import com.google.api.client.util.IOUtils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -41,13 +41,13 @@ public class FileUtils {
         bos.close();
     }
 
-    public static String readFileAsString(File file) throws IOException {
-        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        IOUtils.copy(bis, bos);
-        byte[] contents = bos.toByteArray();
-        bis.close();
-        bos.close();
-        return new String(contents, Charset.forName("UTF-8"));
-    }
+//    public static String readFileAsString(File file) throws IOException {
+//        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
+//        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+//        IOUtils.copy(bis, bos);
+//        byte[] contents = bos.toByteArray();
+//        bis.close();
+//        bos.close();
+//        return new String(contents, Charset.forName("UTF-8"));
+//    }
 }

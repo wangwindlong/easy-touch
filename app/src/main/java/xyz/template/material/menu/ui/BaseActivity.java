@@ -225,9 +225,8 @@ public abstract class BaseActivity extends ActionBarActivity implements
 
         PrefUtils.init(this);
 
-        // Check if the EULA has been accepted; if not, show it.
-        if (!PrefUtils.isTosAccepted(this)) {
-            Intent intent = new Intent(this, WelcomeActivity.class);
+        if (!PrefUtils.isLogin(this)) {
+            Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
             finish();
         }

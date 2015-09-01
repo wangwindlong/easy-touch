@@ -27,9 +27,6 @@ import android.text.TextUtils;
 
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
-import com.larvalabs.svgandroid.SVG;
-import com.larvalabs.svgandroid.SVGBuilder;
-import com.larvalabs.svgandroid.SVGParseException;
 
 import java.io.File;
 import java.io.FileInputStream;

@@ -71,6 +71,9 @@ public class PrefUtils  {
     /** Boolean indicating whether ToS has been accepted */
     public static final String PREF_TOS_ACCEPTED = "pref_tos_accepted";
 
+    /** Boolean indicating whether ToS has been loged */
+    public static final String PREF_TOS_LOGIN = "pref_tos_loged";
+
     /** Boolean indicating whether ToS has been accepted */
     public static final String PREF_DECLINED_WIFI_SETUP = "pref_declined_wifi_setup";
 
@@ -189,6 +192,16 @@ public class PrefUtils  {
     public static void markTosAccepted(final Context context) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
         sp.edit().putBoolean(PREF_TOS_ACCEPTED, true).commit();
+    }
+
+    public static boolean isLogin(final Context context) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        return sp.getBoolean(PREF_TOS_LOGIN, false);
+    }
+
+    public static void markTosLoged(final Context context) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        sp.edit().putBoolean(PREF_TOS_LOGIN, true).commit();
     }
 
     public static boolean hasDeclinedWifiSetup(Context context) {
