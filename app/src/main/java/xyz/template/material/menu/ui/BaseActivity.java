@@ -794,14 +794,14 @@ public abstract class BaseActivity extends ActionBarActivity implements
     }
 
     protected void requestDataRefresh() {
-        Account activeAccount = AccountUtils.getActiveAccount(this);
-        ContentResolver contentResolver = getContentResolver();
-        if (contentResolver.isSyncActive(activeAccount, ScheduleContract.CONTENT_AUTHORITY)) {
-            LOGD(TAG, "Ignoring manual sync request because a sync is already in progress.");
-            return;
-        }
-        mManualSyncRequest = true;
-        LOGD(TAG, "Requesting manual data refresh.");
+//        Account activeAccount = AccountUtils.getActiveAccount(this);
+//        ContentResolver contentResolver = getContentResolver();
+//        if (contentResolver.isSyncActive(activeAccount, ScheduleContract.CONTENT_AUTHORITY)) {
+//            LOGD(TAG, "Ignoring manual sync request because a sync is already in progress.");
+//            return;
+//        }
+//        mManualSyncRequest = true;
+//        LOGD(TAG, "Requesting manual data refresh.");
 //        SyncHelper.requestManualSync(activeAccount);
     }
 

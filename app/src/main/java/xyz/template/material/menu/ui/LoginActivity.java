@@ -17,6 +17,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -26,7 +27,17 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,6 +50,12 @@ import xyz.template.material.menu.utils.PrefUtils;
  */
 public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 
+    private static final int TIMEOUT_IN_MILLIONS = 15000;
+
+    private static final String LOGIN_URL_PRE = "http://imas.ucpaas.com/"
+            + "user/login.do?phone=";
+    private static final String REG_URL_PRE = "http://imas.ucpaas.com/"
+            + "user/reg.do?";
     /**
      * A dummy authentication store containing known user names and passwords.
      * TODO: remove after connecting to a real authentication system.
@@ -71,7 +88,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
                 if (id == R.id.login || id == EditorInfo.IME_NULL) {
-                    attemptLogin();
+                    attemptLogin(1);
                     return true;
                 }
                 return false;
@@ -82,10 +99,16 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                attemptLogin();
+                attemptLogin(1);
             }
         });
 
+        findViewById(R.id.email_register_button).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                attemptLogin(0);
+            }
+        });
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
     }
@@ -100,7 +123,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
      * If there are form errors (invalid email, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
      */
-    public void attemptLogin() {
+    public void attemptLogin(int type) {
         if (mAuthTask != null) {
             return;
         }
@@ -142,18 +165,25 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(email, password);
+            mAuthTask = new UserLoginTask(email, password, type);
             mAuthTask.execute((Void) null);
         }
     }
 
     private boolean isEmailValid(String email) {
-        //TODO: Replace this with your own logic
-        return email.contains("@");
+        return email != null && !TextUtils.isEmpty(email) && email.length() == 11 && isNumber(email);
+    }
+
+    private boolean isNumber(String str) {
+        try {
+            double d = Long.parseLong(str);
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+        return true;
     }
 
     private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
         return password.length() > 4;
     }
 
@@ -256,20 +286,31 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 
         private final String mEmail;
         private final String mPassword;
+        private final int mType;
 
-        UserLoginTask(String email, String password) {
+        UserLoginTask(String email, String password, int type) {
             mEmail = email;
             mPassword = password;
+            mType = type;
         }
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
-
             try {
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
+                String urlStr;
+                if (mType == 0) { //注册
+                    urlStr = LOGIN_URL_PRE + mEmail;
+                } else { //登陆
+                    urlStr = REG_URL_PRE + "phone=" + mEmail
+                            + "&nickname=" + mPassword;
+                }
+                Log.d("wangyl", "urlstr="+urlStr);
+                String result = doGet(urlStr);
+
+                if (result != null) {
+                    parseGetTokenJson(result);
+                }
+            } catch (Exception e) {
                 return false;
             }
 
@@ -281,7 +322,6 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
                 }
             }
 
-            // TODO: register the new account here.
             return true;
         }
 
@@ -289,11 +329,11 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
         protected void onPostExecute(final Boolean success) {
             mAuthTask = null;
             showProgress(false);
-            PrefUtils.markTosLoged(LoginActivity.this);
 
             if (success) {
-                startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                finish();
+//                PrefUtils.markTosLoged(LoginActivity.this);
+//                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+//                finish();
             } else {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();
@@ -305,6 +345,76 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
             mAuthTask = null;
             showProgress(false);
         }
+    }
+
+    private void parseGetTokenJson(String json) {
+        try {
+            JSONTokener jsonParser = new JSONTokener(json);
+            JSONObject tokens = (JSONObject) jsonParser.nextValue();
+            String result = tokens.getString("result");
+            if (result.equals("0")) {
+                Log.d("wangyl", "result=" + result);
+            } else {
+                Log.d("wangyl", "register failed! errorcode=" + result);
+//                Toast.makeText(this, "register failed! errorcode="+result, Toast.LENGTH_SHORT).show();
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static String doGet(String urlStr) {
+        URL url = null;
+        HttpURLConnection conn = null;
+        InputStream is = null;
+        ByteArrayOutputStream baos = null;
+        try {
+            url = new URL(urlStr);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setReadTimeout(TIMEOUT_IN_MILLIONS);
+            conn.setConnectTimeout(TIMEOUT_IN_MILLIONS);
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("accept", "*/*");
+            conn.setRequestProperty("connection", "Keep-Alive");
+            conn.setRequestProperty("Content-Type", "text/html");
+            conn.setRequestProperty("charset", "utf-8");
+
+            int responseCode = conn.getResponseCode();
+            if (responseCode == 200) {
+                is = conn.getInputStream();
+                baos = new ByteArrayOutputStream();
+                int len = -1;
+                byte[] buf = new byte[128];
+
+                while ((len = is.read(buf)) != -1) {
+                    baos.write(buf, 0, len);
+                }
+                baos.flush();
+                return baos.toString();
+            } else {
+                throw new RuntimeException(" responseCode is not 200 ... "
+                        + responseCode);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (is != null)
+                    is.close();
+            } catch (IOException e) {
+            }
+            try {
+                if (baos != null)
+                    baos.close();
+            } catch (IOException e) {
+            }
+            conn.disconnect();
+        }
+
+        return null;
+
     }
 }
 
