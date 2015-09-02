@@ -1,5 +1,7 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="app_name">Template</string>
+    <string name="app_name">IMDemo</string>
+    <string name="phone_digits">0123456789</string>
+    <string name="nick_digits">abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789</string>
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>

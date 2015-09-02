@@ -298,29 +298,30 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
         protected Boolean doInBackground(Void... params) {
             try {
                 String urlStr;
-                if (mType == 0) { //注册
+                if (mType == 1) { //登陆
                     urlStr = LOGIN_URL_PRE + mEmail;
-                } else { //登陆
+                } else { //注册
                     urlStr = REG_URL_PRE + "phone=" + mEmail
                             + "&nickname=" + mPassword;
                 }
                 Log.d("wangyl", "urlstr="+urlStr);
-                String result = doGet(urlStr);
+                String result = doGet(urlStr, mType);
 
                 if (result != null) {
                     parseGetTokenJson(result);
                 }
             } catch (Exception e) {
+                Log.d("wangyl", "doInBackground exception="+e.toString());
                 return false;
             }
 
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
-                }
-            }
+//            for (String credential : DUMMY_CREDENTIALS) {
+//                String[] pieces = credential.split(":");
+//                if (pieces[0].equals(mEmail)) {
+//                    // Account exists, return true if the password matches.
+//                    return pieces[1].equals(mPassword);
+//                }
+//            }
 
             return true;
         }
@@ -364,7 +365,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
         }
     }
 
-    public static String doGet(String urlStr) {
+    public static String doGet(String urlStr, int type) {
         URL url = null;
         HttpURLConnection conn = null;
         InputStream is = null;
@@ -374,7 +375,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
             conn = (HttpURLConnection) url.openConnection();
             conn.setReadTimeout(TIMEOUT_IN_MILLIONS);
             conn.setConnectTimeout(TIMEOUT_IN_MILLIONS);
-            conn.setRequestMethod("GET");
+            conn.setRequestMethod(type == 1 ? "GET" : "POST");
             conn.setRequestProperty("accept", "*/*");
             conn.setRequestProperty("connection", "Keep-Alive");
             conn.setRequestProperty("Content-Type", "text/html");

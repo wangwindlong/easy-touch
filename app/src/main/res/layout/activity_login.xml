@@ -21,11 +21,20 @@
             <AutoCompleteTextView android:id="@+id/email" android:layout_width="match_parent"
                 android:layout_height="wrap_content" android:hint="@string/prompt_email"
                 android:inputType="textEmailAddress" android:maxLines="1"
+                android:digits="@string/phone_digits"
                 android:singleLine="true" />
 
+            <EditText android:id="@+id/nickname" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:hint="@string/prompt_nickname"
+                android:imeActionId="@+id/login"
+                android:digits="@string/nick_digits"
+                android:imeActionLabel="@string/action_sign_in_short"
+                android:imeOptions="actionUnspecified" android:inputType="text"
+                android:maxLines="1" android:singleLine="true" />
             <EditText android:id="@+id/password" android:layout_width="match_parent"
                 android:layout_height="wrap_content" android:hint="@string/prompt_password"
                 android:imeActionId="@+id/login"
+                android:visibility="gone"
                 android:imeActionLabel="@string/action_sign_in_short"
                 android:imeOptions="actionUnspecified" android:inputType="textPassword"
                 android:maxLines="1" android:singleLine="true" />
