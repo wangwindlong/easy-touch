@@ -45,6 +45,7 @@ public class TagMetadata {
     }
 
     public TagMetadata(Cursor cursor) {
+        if (cursor == null) return;
         while (cursor.moveToNext()) {
             Tag tag = new Tag(cursor.getString(TagsQuery.TAG_ID),
                     cursor.getString(TagsQuery.TAG_NAME),

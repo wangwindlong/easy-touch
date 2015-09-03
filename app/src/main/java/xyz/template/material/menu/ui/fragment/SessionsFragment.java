@@ -376,10 +376,10 @@ public class SessionsFragment extends Fragment implements
     }
 
     public void animateReload() {
-        //int curTop = mCollectionView.getTop();
+        int curTop = mCollectionView.getTop();
         mCollectionView.setAlpha(0);
-        //mCollectionView.setTop(getResources().getDimensionPixelSize(R.dimen.browse_sessions_anim_amount));
-        //mCollectionView.animate().y(curTop).alpha(1).setDuration(ANIM_DURATION).setInterpolator(new DecelerateInterpolator());
+        mCollectionView.setTop(getResources().getDimensionPixelSize(R.dimen.browse_sessions_anim_amount));
+        mCollectionView.animate().y(curTop).alpha(1).setDuration(ANIM_DURATION).setInterpolator(new DecelerateInterpolator());
         mCollectionView.animate().alpha(1).setDuration(ANIM_DURATION).setInterpolator(new DecelerateInterpolator());
     }
 
@@ -421,7 +421,7 @@ public class SessionsFragment extends Fragment implements
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-        if (getActivity() == null) {
+        if (getActivity() == null || cursor == null) {
             return;
         }
 

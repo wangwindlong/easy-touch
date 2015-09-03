@@ -68,8 +68,19 @@
             android:theme="@style/Theme.IOSched.Welcome" />
         <activity
             android:name=".ui.LoginActivity"
+            android:launchMode="singleTop"
             android:label="@string/title_activity_login"
             android:windowSoftInputMode="adjustResize|stateVisible" >
+        </activity>
+        <activity
+            android:name=".ui.SettingsActivity"
+            android:label="@string/title_settings"
+            android:parentActivityName=".MainActivity">
+        </activity>
+        <activity
+            android:name=".ui.TalkActivity"
+            android:label="@string/title_talking"
+            android:parentActivityName=".MainActivity">
         </activity>
         
         <service android:name="com.yzxtcp.service.YzxIMCoreService"/>

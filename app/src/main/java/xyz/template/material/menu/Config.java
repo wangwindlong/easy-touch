@@ -31,6 +31,9 @@ public class Config {
     // Is this an internal dogfood build?
     public static final boolean IS_DOGFOOD_BUILD = false;
 
+    public static final boolean IS_DEBUG_MODE = true;
+    public static final String BaseUri = IS_DEBUG_MODE ? "http://imas.ucpaas.com/user/" : "";
+
     // Warning messages for dogfood build
     public static final String DOGFOOD_BUILD_WARNING_TITLE = "Test build";
     public static final String DOGFOOD_BUILD_WARNING_TEXT = "This is a test build.";

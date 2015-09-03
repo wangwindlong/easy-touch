@@ -8,6 +8,7 @@ import android.support.v7.app.ActionBar;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,6 +18,7 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,19 +85,6 @@ public class MainActivity extends BaseActivity implements SessionsFragment.Callb
             String title = UIUtils.formatIntervalTimeString(interval[0], interval[1], null, this);
             toolbar.setTitle(title);
             mMode = MODE_TIME_FIT;
-            /* [ANALYTICS:SCREEN]
-             * TRIGGER:   View the Explore screen to find sessions fitting a time slot
-             * LABEL:    'Explore <time interval>'
-             * [/ANALYTICS]
-             */
-//            AnalyticsManager.sendScreenView(SCREEN_LABEL + ": " + title);
-        } else {
-            /* [ANALYTICS:SCREEN]
-             * TRIGGER:   View the Explore screen (landing screen)
-             * LABEL:    'Explore'
-             * [/ANALYTICS]
-             */
-//            AnalyticsManager.sendScreenView(SCREEN_LABEL);
         }
 
         overridePendingTransition(0, 0);
@@ -120,6 +109,29 @@ public class MainActivity extends BaseActivity implements SessionsFragment.Callb
 
     }
 
+    // 双击退出
+    long exitTime = 0;
+    int count = 0;
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (count == 0) {
+                exitTime = System.currentTimeMillis();
+                count++;
+                Toast.makeText(this, "再按一次退出程序", Toast.LENGTH_SHORT).show();
+            } else if (count == 1) {
+                if ((System.currentTimeMillis() - exitTime) < 2000) {
+                    count = 0;
+                    finish();
+                } else {
+                    count = 0;
+                    exitTime = System.currentTimeMillis();
+                }
+            }
+        }
+        return false;
+    }
 
     @Override
     public void onResume() {
@@ -180,7 +192,7 @@ public class MainActivity extends BaseActivity implements SessionsFragment.Callb
         if (collectionView != null) {
             enableActionBarAutoHide(collectionView);
         }
-
+//
         mSessionsFrag = (SessionsFragment) getFragmentManager().findFragmentById(
                 R.id.sessions_fragment);
         if (mSessionsFrag != null && savedInstanceState == null) {
@@ -304,14 +316,6 @@ public class MainActivity extends BaseActivity implements SessionsFragment.Callb
             return;
         }
 
-        /* [ANALYTICS:EVENT]
-         * TRIGGER:   Select a top-level filter on the Explore screen.
-         * CATEGORY:  'Explore'
-         * ACTION:    'topfilter'
-         * LABEL:     The selected tag. For example, "THEME_DEVELOP", "TOPIC_ANDROID", etc.
-         * [/ANALYTICS]
-         */
-//        AnalyticsManager.sendEvent(SCREEN_LABEL, "topfilter", tag);
         mFilterTags[0] = tag;
 
         // Reset secondary filters
@@ -441,14 +445,6 @@ public class MainActivity extends BaseActivity implements SessionsFragment.Callb
             private void selectTag(String tag) {
                 if (!mFilterTags[filterIndex].equals(tag)) {
                     mFilterTags[filterIndex] = tag;
-                    /* [ANALYTICS:EVENT]
-                     * TRIGGER:   Select a secondary filter on the Explore screen.
-                     * CATEGORY:  'Explore'
-                     * ACTION:    'secondaryfilter'
-                     * LABEL:     The selected tag. For example, "THEME_DEVELOP", "TOPIC_ANDROID", etc.
-                     * [/ANALYTICS]
-                     */
-//                    AnalyticsManager.sendEvent(SCREEN_LABEL, "secondaryfilter", tag);
                     updateHeaderColor();
                     reloadFromFilters();
                 }
@@ -503,14 +499,6 @@ public class MainActivity extends BaseActivity implements SessionsFragment.Callb
 
     @Override
     public void onSessionSelected(String sessionId, View clickedView) {
-        /* [ANALYTICS:EVENT]
-         * TRIGGER:   Click on a session on the Explore screen.
-         * CATEGORY:  'Explore'
-         * ACTION:    'selectsession'
-         * LABEL:     session ID (for example "3284-fac320-2492048-bf391')
-         * [/ANALYTICS]
-         */
-//        AnalyticsManager.sendEvent(SCREEN_LABEL, "selectsession", sessionId);
         getLUtils().startActivityWithTransition(new Intent(Intent.ACTION_VIEW,
                         ScheduleContract.Sessions.buildSessionUri(sessionId)),
                 clickedView,

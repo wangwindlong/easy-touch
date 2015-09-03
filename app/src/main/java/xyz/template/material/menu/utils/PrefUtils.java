@@ -23,6 +23,7 @@ import android.preference.PreferenceManager;
 import java.util.TimeZone;
 
 import xyz.template.material.menu.Config;
+import xyz.template.material.menu.model.LoginData;
 
 import static xyz.template.material.menu.utils.LogUtils.LOGD;
 import static xyz.template.material.menu.utils.LogUtils.makeLogTag;
@@ -73,6 +74,10 @@ public class PrefUtils  {
 
     /** Boolean indicating whether ToS has been loged */
     public static final String PREF_TOS_LOGIN = "pref_tos_loged";
+    public static final String PREF_TOS_TOKEN = "pref_tos_token";
+    public static final String PREF_TOS_NAME = "pref_tos_name";
+    public static final String PREF_TOS_URL = "pref_tos_portraituri";
+    public static final String PREF_TOS_PHONE = "pref_tos_phone";
 
     /** Boolean indicating whether ToS has been accepted */
     public static final String PREF_DECLINED_WIFI_SETUP = "pref_declined_wifi_setup";
@@ -199,9 +204,29 @@ public class PrefUtils  {
         return sp.getBoolean(PREF_TOS_LOGIN, false);
     }
 
-    public static void markTosLoged(final Context context) {
+    public static void markTosLoged(final Context context,  LoginData loginData, boolean isLogin) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-        sp.edit().putBoolean(PREF_TOS_LOGIN, true).commit();
+        SharedPreferences.Editor editor = sp.edit();
+        if (!isLogin || loginData == null) {
+            editor.putBoolean(PREF_TOS_LOGIN, isLogin).apply();
+            return;
+        }
+        editor.putString(PREF_TOS_TOKEN, loginData.getToken());
+        editor.putString(PREF_TOS_NAME, loginData.getNickname());
+        editor.putString(PREF_TOS_URL, loginData.getPortraituri());
+        editor.putString(PREF_TOS_PHONE, loginData.getPhone());
+        editor.putBoolean(PREF_TOS_LOGIN, true).apply();
+
+    }
+
+    public static LoginData getUserInfo(final Context context) {
+        LoginData loginData = new LoginData();
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        loginData.setNickname(sp.getString(PREF_TOS_NAME, "我还没起名哦"));
+        loginData.setPhone(sp.getString(PREF_TOS_PHONE, ""));
+        loginData.setToken(sp.getString(PREF_TOS_TOKEN, ""));
+        loginData.setPortraituri(sp.getString(PREF_TOS_URL, ""));
+        return loginData;
     }
 
     public static boolean hasDeclinedWifiSetup(Context context) {
@@ -323,7 +348,7 @@ public class PrefUtils  {
     }
 
     public static void registerOnSharedPreferenceChangeListener(final Context context,
-            SharedPreferences.OnSharedPreferenceChangeListener listener) {
+                                                                SharedPreferences.OnSharedPreferenceChangeListener listener) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
         sp.registerOnSharedPreferenceChangeListener(listener);
     }

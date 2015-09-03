@@ -63,7 +63,7 @@
     <color name="data_item_lightbg_dim_text">#e0e0e0</color>
 
     <color name="session_photo_scrim">#6000</color>
-
+    <color name="background_tab_pressed">#6633B5E5</color>
     <color name="default_session_color">@color/theme_primary</color>
     <color name="no_track_branding_session_tile_overlay">#8333</color>
     <color name="no_track_branding_session_color">#333</color>

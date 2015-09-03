@@ -11,11 +11,12 @@ import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
-import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
 
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
 import android.util.Log;
@@ -30,13 +31,14 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.turbomanage.httpclient.BasicHttpClient;
-import com.turbomanage.httpclient.ConsoleRequestLogger;
-import com.turbomanage.httpclient.HttpResponse;
-import com.turbomanage.httpclient.RequestLogger;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.yzxtcp.UCSManager;
+import com.yzxtcp.data.UcsReason;
+import com.yzxtcp.listener.ILoginListener;
 
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -44,14 +46,21 @@ import org.json.JSONTokener;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import xyz.template.material.menu.Config;
+import xyz.template.material.menu.ImApplication;
 import xyz.template.material.menu.MainActivity;
 import xyz.template.material.menu.R;
+import xyz.template.material.menu.model.LoginData;
+import xyz.template.material.menu.utils.NetUtils;
 import xyz.template.material.menu.utils.PrefUtils;
+import xyz.template.material.menu.volley.toolbox.GsonRequest;
 
 /**
  * A login screen that offers login via email/password.
@@ -60,10 +69,8 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 
     private static final int TIMEOUT_IN_MILLIONS = 15000;
 
-    private static final String LOGIN_URL_PRE = "http://imas.ucpaas.com/"
-            + "user/login.do?phone=";
-    private static final String REG_URL_PRE = "http://imas.ucpaas.com/"
-            + "user/reg.do?";
+    private static final String LOGIN_URL_PRE = "http://imas.ucpaas.com/user/login.do?phone=";
+    private static final String REG_URL_PRE = "http://imas.ucpaas.com/user/reg.do?";
     /**
      * A dummy authentication store containing known user names and passwords.
      * TODO: remove after connecting to a real authentication system.
@@ -103,6 +110,9 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
                 return false;
             }
         });
+        LoginData loginData = PrefUtils.getUserInfo(this);
+        mEmailView.setText(loginData.getPhone());
+        mPasswordView.setText(loginData.getNickname());
 
         Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
@@ -160,10 +170,14 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
             mEmailView.setError(getString(R.string.error_field_required));
             focusView = mEmailView;
             cancel = true;
-        } else if (!isEmailValid(email)) {
-            mEmailView.setError(getString(R.string.error_invalid_email));
-            focusView = mEmailView;
-            cancel = true;
+        } else  {
+            if (type == 0) {
+                if (!isEmailValid(email)) {
+                    mEmailView.setError(getString(R.string.error_invalid_email));
+                    focusView = mEmailView;
+                    cancel = true;
+                }
+            }
         }
 
         if (cancel) {
@@ -175,26 +189,108 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
             // perform the user login attempt.
             showProgress(true);
 
-            AndroidHttpClient httpClient = AndroidHttpClient.newInstance("");
-            //实现将请求 的参数封装封装到HttpEntity中。
-                        UrlEncodedFormEntity entity=new UrlEncodedFormEntity(list, encode);
-                         //使用HttpPost请求方式
-                        HttpPost httpPost=new HttpPost(path);
-                         //设置请求参数到Form中。
-                        httpPost.setEntity(entity);
-                ParameterMap params = httpClient.newParams().add("q", "GOOG");
-                httpClient.setMaxRetries(3);
-                httpClient.get("/finance", params, new AsyncCallback() {
-                        public void onComplete(HttpResponse httpResponse) {
-                                System.out.println(httpResponse.getBodyAsString());
-                            }
-                        public void onError(Exception e) {
-                               e.printStackTrace();
-                          }
-            });
-            mAuthTask = new UserLoginTask(email, password, type);
-            mAuthTask.execute((Void) null);
+//            AndroidHttpClient httpClient = AndroidHttpClient.newInstance("");
+            RequestQueue queue = ImApplication.getRequestQueue();
+//            String uri = String.format(Config.BaseUri + "login.do?phone=%1$s&param2=%2$s", email, password);
+            String urlStr;
+            if (type == 1) { //登陆
+                urlStr = String.format(Config.BaseUri + "login.do?phone=%1$s", email);
+            } else { //注册
+                urlStr = String.format(Config.BaseUri + "reg.do?phone=%1$s&nickname=%2$s", email, password);
+            }
+            Log.d("wangyl", "urlstr=" + urlStr);
+
+            isLoading = true;
+            GsonRequest<LoginData> myReq = new GsonRequest<LoginData>(Request.Method.GET,
+                        urlStr,
+                        LoginData.class,
+                        createMyReqSuccessListener(type),
+                        createMyReqErrorListener(type));
+            queue.add(myReq);
         }
+    }
+
+    private Response.Listener<LoginData> createMyReqSuccessListener(final int type) {
+        final String str = type == 0 ? "注册" : "登陆";
+        return new Response.Listener<LoginData>() {
+            @Override
+            public void onResponse(final LoginData response) {
+                Log.d("wangyl", "onResponse response=" + response.toString());
+                boolean needToConnect = false;
+                if ("0". equals(response.getResult())) {
+                    needToConnect = true;
+//                    Toast.makeText(LoginActivity.this, str + "成功,正在登陆...", Toast.LENGTH_SHORT).show();
+                } else {
+                    String errMsg = "";
+                    switch (Integer.parseInt(response.getResult())) {
+                        case -1:
+                            needToConnect = true;
+                            break;
+                        case -2:
+                        default:
+                            showProgress(false);
+                            isLoading = false;
+                            errMsg = "未知错误,请联系管理员";
+                            Toast.makeText(LoginActivity.this, str + "失败！失败原因：" + errMsg, Toast.LENGTH_SHORT).show();
+                            break;
+                    }
+//                    mPasswordView.setError(getString(R.string.error_incorrect_password));
+//                    mPasswordView.requestFocus();
+                }
+                if (needToConnect) {
+                    new Handler().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            connect(response);
+                        }
+                    });
+                }
+            }
+        };
+    }
+
+
+    private Response.ErrorListener createMyReqErrorListener(int type) {
+        final String str = type == 0 ? "注册" : "登陆";
+        return new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+//                mTvResult.setText(error.getMessage());
+                showProgress(false);
+                isLoading = false;
+                Toast.makeText(LoginActivity.this, str + "失败！请检查网络是否可用", Toast.LENGTH_SHORT).show();
+                Log.d("wangyl", "onErrorResponse error="+error.getMessage());
+            }
+        };
+    }
+
+    private void connect(final LoginData loginData) {
+        UCSManager.connect(loginData.getToken(), new ILoginListener() {
+            @Override
+            public void onLogin(final UcsReason arg0) {
+                Log.d("wangyl", "onLogin result=" + arg0.getReason() +",isLoading="+isLoading);
+                if (isLoading) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            showProgress(false);
+                            isLoading = false;
+
+                            if (arg0.getReason() == 0) {
+                                //登入成功
+                                PrefUtils.markTosLoged(LoginActivity.this, loginData, true);
+                                Toast.makeText(LoginActivity.this, "登陆成功！", Toast.LENGTH_SHORT).show();
+                                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                                finish();
+                            } else {
+                                //登入失败
+                                Toast.makeText(LoginActivity.this, "登陆失败！失败原因：" + arg0.getMsg(), Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+                }
+            }
+        });
     }
 
     private boolean isEmailValid(String email) {
@@ -211,7 +307,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
     }
 
     private boolean isPasswordValid(String password) {
-        return password.length() > 4;
+        return password.length() > 1;
     }
 
     /**
@@ -331,14 +427,14 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
                     urlStr = REG_URL_PRE + "phone=" + mEmail
                             + "&nickname=" + mPassword;
                 }
-                Log.d("wangyl", "urlstr="+urlStr);
+                Log.d("wangyl", "urlstr=" + urlStr);
                 String result = doGet(urlStr, mType);
 
                 if (result != null) {
                     parseGetTokenJson(result);
                 }
             } catch (Exception e) {
-                Log.d("wangyl", "doInBackground exception="+e.toString());
+                Log.d("wangyl", "doInBackground exception=" + e.toString());
                 return false;
             }
 
@@ -355,7 +451,6 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 
         @Override
         protected void onPostExecute(final Boolean success) {
-            mAuthTask = null;
             showProgress(false);
 
             if (success) {
@@ -370,7 +465,6 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 
         @Override
         protected void onCancelled() {
-            mAuthTask = null;
             showProgress(false);
         }
     }

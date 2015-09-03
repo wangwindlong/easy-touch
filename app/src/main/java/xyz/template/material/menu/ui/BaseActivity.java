@@ -51,6 +51,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -65,6 +66,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import com.yzxIM.IMManager;
+import com.yzxtcp.UCSManager;
+import com.yzxtcp.data.UcsReason;
+import com.yzxtcp.listener.ILoginListener;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -72,9 +78,11 @@ import java.util.List;
 
 import xyz.template.material.menu.BuildConfig;
 import xyz.template.material.menu.Config;
+import xyz.template.material.menu.MainActivity;
 import xyz.template.material.menu.R;
 import xyz.template.material.menu.data.ConferenceDataHandler;
 import xyz.template.material.menu.io.JSONHandler;
+import xyz.template.material.menu.model.LoginData;
 import xyz.template.material.menu.provider.ScheduleContract;
 import xyz.template.material.menu.ui.widget.MultiSwipeRefreshLayout;
 import xyz.template.material.menu.ui.widget.ScrimInsetsScrollView;
@@ -146,28 +154,24 @@ public abstract class BaseActivity extends ActionBarActivity implements
 
     // titles for navdrawer items (indices must correspond to the above)
     private static final int[] NAVDRAWER_TITLE_RES_ID = new int[]{
-            R.string.navdrawer_item_my_schedule,
-            R.string.navdrawer_item_explore,
-            R.string.navdrawer_item_map,
-            R.string.navdrawer_item_social,
+            R.string.navdrawer_item_my_friend,
+            R.string.navdrawer_item_my_talklist,
+            R.string.navdrawer_item_my_care,
+            R.string.navdrawer_item_my_note,
+            R.string.navdrawer_item_my_beautiful,
             R.string.navdrawer_item_video_library,
-            R.string.navdrawer_item_sign_in,
             R.string.navdrawer_item_settings,
-            R.string.navdrawer_item_experts_directory,
-            R.string.navdrawer_item_people_ive_met
     };
 
     // icons for navdrawer items (indices must correspond to above array)
     private static final int[] NAVDRAWER_ICON_RES_ID = new int[] {
-            R.drawable.ic_drawer_my_schedule,  // My Schedule
-            R.drawable.ic_drawer_explore,  // Explore
+            R.drawable.ic_drawer_people_met,  // My Schedule
+            R.drawable.ic_drawer_social,  // Explore
             R.drawable.ic_drawer_map, // Map
-            R.drawable.ic_drawer_social, // Social
-            R.drawable.ic_drawer_video_library, // Video Library
-            0, // Sign in
+            R.drawable.ic_drawer_my_schedule, // Social
+            R.drawable.ic_drawer_experts, // Video Library
+            R.drawable.ic_drawer_video_library,
             R.drawable.ic_drawer_settings,
-            R.drawable.ic_drawer_experts,
-            R.drawable.ic_drawer_people_met,
     };
 
     // delay to launch nav drawer item, to allow close animation to play
@@ -218,17 +222,37 @@ public abstract class BaseActivity extends ActionBarActivity implements
     private static final TypeEvaluator ARGB_EVALUATOR = new ArgbEvaluator();
     private ImageLoader mImageLoader;
 
+    private void connect(final LoginData loginData) {
+        UCSManager.connect(loginData.getToken(), new ILoginListener() {
+            @Override
+            public void onLogin(UcsReason arg0) {
+                if (arg0.getReason() == 0) {
+                    //登入成功
+                    LOGD("wangyl", "onLogin success");
+//                    Toast.makeText(BaseActivity.this, "登陆成功！", Toast.LENGTH_SHORT).show();
+
+                } else {
+                    //登入失败
+                    startActivity(new Intent(BaseActivity.this, LoginActivity.class));
+                    finish();
+//                    Toast.makeText(BaseActivity.this, "登陆失败！失败原因：" + arg0.getMsg(), Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         RecentTasksStyler.styleRecentTasksEntry(this);
 
         PrefUtils.init(this);
-
         if (!PrefUtils.isLogin(this)) {
             Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
             finish();
+//        } else {
+//            connect(PrefUtils.getUserInfo(this));
         }
 
         mImageLoader = new ImageLoader(this);
@@ -434,42 +458,27 @@ public abstract class BaseActivity extends ActionBarActivity implements
 
     /** Populates the navigation drawer with the appropriate items. */
     private void populateNavDrawer() {
-        boolean attendeeAtVenue = PrefUtils.isAttendeeAtVenue(this);
+//        boolean attendeeAtVenue = PrefUtils.isAttendeeAtVenue(this);
         mNavDrawerItems.clear();
 
         // decide which items will appear in the nav drawer
-        if (AccountUtils.hasActiveAccount(this)) {
-            // Only logged-in users can save sessions, so if there is no active account,
-            // there is no My Schedule
-            mNavDrawerItems.add(NAVDRAWER_ITEM_MY_SCHEDULE);
-        } else {
-            // If no active account, show Sign In
-            mNavDrawerItems.add(NAVDRAWER_ITEM_SIGN_IN);
-        }
+        mNavDrawerItems.add(NAVDRAWER_ITEM_MY_SCHEDULE);
 
         // Explore is always shown
         mNavDrawerItems.add(NAVDRAWER_ITEM_EXPLORE);
 
-        // If the attendee is on-site, show Map on the nav drawer
-        if (attendeeAtVenue) {
-            mNavDrawerItems.add(NAVDRAWER_ITEM_MAP);
-        }
+        mNavDrawerItems.add(NAVDRAWER_ITEM_MAP);
         mNavDrawerItems.add(NAVDRAWER_ITEM_SEPARATOR);
 
         // If attendee is on-site, show the People I've Met item
-        if (attendeeAtVenue) {
-            mNavDrawerItems.add(NAVDRAWER_ITEM_PEOPLE_IVE_MET);
-        }
+        mNavDrawerItems.add(NAVDRAWER_ITEM_SOCIAL);
 
         // If the experts directory hasn't expired, show it
-        if (!Config.hasExpertsDirectoryExpired()) {
-            mNavDrawerItems.add(NAVDRAWER_ITEM_EXPERTS_DIRECTORY);
-        }
+//        if (!Config.hasExpertsDirectoryExpired()) {
+            mNavDrawerItems.add(NAVDRAWER_ITEM_VIDEO_LIBRARY);
+//        }
 
-        // Other items that are always in the nav drawer irrespective of whether the
-        // attendee is on-site or remote:
-        mNavDrawerItems.add(NAVDRAWER_ITEM_SOCIAL);
-        mNavDrawerItems.add(NAVDRAWER_ITEM_VIDEO_LIBRARY);
+        mNavDrawerItems.add(NAVDRAWER_ITEM_SIGN_IN);
         mNavDrawerItems.add(NAVDRAWER_ITEM_SEPARATOR_SPECIAL);
         mNavDrawerItems.add(NAVDRAWER_ITEM_SETTINGS);
 
@@ -522,6 +531,11 @@ public abstract class BaseActivity extends ActionBarActivity implements
             LOGD(TAG, "Attendee at venue preference changed, repopulating nav drawer and menu.");
             populateNavDrawer();
             invalidateOptionsMenu();
+        } else if (key.equals(PrefUtils.PREF_TOS_LOGIN)){
+            LOGD(TAG, "User has quict the current account.");
+            if (!PrefUtils.isLogin(BaseActivity.this)) {
+                finish();
+            }
         }
     }
 
@@ -560,18 +574,18 @@ public abstract class BaseActivity extends ActionBarActivity implements
         Account chosenAccount = AccountUtils.getActiveAccount(this);
         if (chosenAccount == null) {
             // No account logged in; hide account box
-            chosenAccountView.setVisibility(View.GONE);
-            mAccountListContainer.setVisibility(View.GONE);
-            return;
+//            chosenAccountView.setVisibility(View.GONE);
+//            mAccountListContainer.setVisibility(View.GONE);
+//            return;
         } else {
             chosenAccountView.setVisibility(View.VISIBLE);
             mAccountListContainer.setVisibility(View.INVISIBLE);
         }
 
-        AccountManager am = AccountManager.get(this);
-        Account[] accountArray = am.getAccountsByType("com.google");
-        List<Account> accounts = new ArrayList<Account>(Arrays.asList(accountArray));
-        accounts.remove(chosenAccount);
+//        AccountManager am = AccountManager.get(this);
+//        Account[] accountArray = am.getAccountsByType("com.google");
+//        List<Account> accounts = new ArrayList<Account>(Arrays.asList(accountArray));
+//        accounts.remove(chosenAccount);
 
         ImageView coverImageView = (ImageView) chosenAccountView.findViewById(R.id.profile_cover_image);
         ImageView profileImageView = (ImageView) chosenAccountView.findViewById(R.id.profile_image);
@@ -599,15 +613,15 @@ public abstract class BaseActivity extends ActionBarActivity implements
             coverImageView.setImageResource(R.drawable.default_cover);
         }
 
-        email.setText(chosenAccount.name);
+//        email.setText(PrefUtils.getCurSyncInterval());
 
-        if (accounts.isEmpty()) {
-            // There's only one account on the device, so no need for a switcher.
-            mExpandAccountBoxIndicator.setVisibility(View.GONE);
-            mAccountListContainer.setVisibility(View.GONE);
-            chosenAccountView.setEnabled(false);
-            return;
-        }
+//        if (accounts.isEmpty()) {
+//            // There's only one account on the device, so no need for a switcher.
+//            mExpandAccountBoxIndicator.setVisibility(View.GONE);
+//            mAccountListContainer.setVisibility(View.GONE);
+//            chosenAccountView.setEnabled(false);
+//            return;
+//        }
 
         chosenAccountView.setEnabled(true);
 
@@ -621,7 +635,7 @@ public abstract class BaseActivity extends ActionBarActivity implements
         });
         setupAccountBoxToggle();
 
-        populateAccountList(accounts);
+//        populateAccountList(accounts);
     }
 
     private void populateAccountList(List<Account> accounts) {
@@ -808,22 +822,20 @@ public abstract class BaseActivity extends ActionBarActivity implements
     private void goToNavDrawerItem(int item) {
         Intent intent;
         Toast.makeText(this, "goToNavDrawerItem item="+item, Toast.LENGTH_SHORT).show();
-//        switch (item) {
+        switch (item) {
 //            case NAVDRAWER_ITEM_MY_SCHEDULE:
 //                intent = new Intent(this, MyScheduleActivity.class);
 //                startActivity(intent);
 //                finish();
 //                break;
-//            case NAVDRAWER_ITEM_EXPLORE:
-//                intent = new Intent(this, BrowseSessionsActivity.class);
-//                startActivity(intent);
-//                finish();
-//                break;
-//            case NAVDRAWER_ITEM_MAP:
-//                intent = new Intent(this, UIUtils.getMapActivityClass(this));
-//                startActivity(intent);
-//                finish();
-//                break;
+            case NAVDRAWER_ITEM_EXPLORE:
+                intent = new Intent(this, MainActivity.class);
+                startActivity(intent);
+                break;
+            case NAVDRAWER_ITEM_MAP:
+                intent = new Intent(this,TalkActivity.class);
+                startActivity(intent);
+                break;
 //            case NAVDRAWER_ITEM_SOCIAL:
 //                intent = new Intent(this, SocialActivity.class);
 //                startActivity(intent);
@@ -842,16 +854,16 @@ public abstract class BaseActivity extends ActionBarActivity implements
 //            case NAVDRAWER_ITEM_SIGN_IN:
 //                signInOrCreateAnAccount();
 //                break;
-//            case NAVDRAWER_ITEM_SETTINGS:
-//                intent = new Intent(this, SettingsActivity.class);
-//                startActivity(intent);
-//                break;
+            case NAVDRAWER_ITEM_SETTINGS:
+                intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
+                break;
 //            case NAVDRAWER_ITEM_VIDEO_LIBRARY:
 //                intent = new Intent(this, VideoLibraryActivity.class);
 //                startActivity(intent);
 //                finish();
 //                break;
-//        }
+        }
     }
 
     private void signInOrCreateAnAccount() {
@@ -1076,22 +1088,22 @@ public abstract class BaseActivity extends ActionBarActivity implements
 
     private void complainMustHaveGoogleAccount() {
         LOGD(TAG, "Complaining about missing Google account.");
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.google_account_required_title)
-                .setMessage(R.string.google_account_required_message)
-                .setPositiveButton(R.string.add_account, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        promptAddAccount();
-                    }
-                })
-                .setNegativeButton(R.string.not_now, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        finish();
-                    }
-                })
-                .show();
+//        new AlertDialog.Builder(this)
+//                .setTitle(R.string.google_account_required_title)
+//                .setMessage(R.string.google_account_required_message)
+//                .setPositiveButton(R.string.add_account, new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        promptAddAccount();
+//                    }
+//                })
+//                .setNegativeButton(R.string.not_now, new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        finish();
+//                    }
+//                })
+//                .show();
     }
 
     private void promptAddAccount() {

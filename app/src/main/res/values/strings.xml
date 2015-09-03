@@ -373,6 +373,11 @@
 
     <!-- Menu item to open the My Schedule screen [CHAR_LIMIT=20] -->
     <string name="navdrawer_item_my_schedule">My Schedule</string>
+    <string name="navdrawer_item_my_talklist">会话列表</string>
+    <string name="navdrawer_item_my_friend">我的好友</string>
+    <string name="navdrawer_item_my_care">特别关注</string>
+    <string name="navdrawer_item_my_note">心得日志</string>
+    <string name="navdrawer_item_my_beautiful">美乐美文</string>
 
     <!-- Menu item to open the People I've Met screen [CHAR_LIMIT=20] -->
     <string name="navdrawer_item_people_ive_met">People I\'ve Met</string>
@@ -381,7 +386,7 @@
     <string name="navdrawer_item_people_ive_met_a11y">People I\'ve Met</string>
 
     <!-- Menu item to open the Settings screen [CHAR_LIMIT=20] -->
-    <string name="navdrawer_item_settings">Settings</string>
+    <string name="navdrawer_item_settings">设置</string>
 
     <!-- Menu item to start the Sign In flow [CHAR_LIMIT=20] -->
     <string name="navdrawer_item_sign_in">Sign in</string>
@@ -391,7 +396,7 @@
     <string name="navdrawer_item_social">Social</string>
 
     <!-- Menu item to open a list of current and past I/O videos [CHAR_LIMIT=20] -->
-    <string name="navdrawer_item_video_library">Video library</string>
+    <string name="navdrawer_item_video_library">视频</string>
 
     <!-- Text indicator that appears below the user's name, showing that they are
     attending the conference in person in San Francisco. -->
@@ -520,6 +525,21 @@
 
     <!-- Title in the Settings screen for the "Show local times" option -->
     <string name="pref_local_times_title">Show local times</string>
+    <string name="pref_show_location_title">接收每日美文美乐推送</string>
+    <string name="pref_show_location_summar">如果选中，你的设备会接收美乐美文的推送，你会在第一时间接收到每天最新的文章和音乐通知。</string>
+    <string name="pref_show_network_title">同步心得日志到服务端(wifi情况下)</string>
+    <string name="pref_show_network_summar">如果选中，你的设备中新增的日记会在wifi网络下自动上传到服务端，备份，妈妈再也不用担心我的日记丢失了。</string>
+    <string name="pref_notify_voice_title">消息提示音</string>
+    <string name="pref_notify_voice_summar">如果选中，在收到通知消息和推送时会发出提示音，否则只会震动。</string>
+    <string name="pref_receive_pic_title">2G/3G/4G下自动接收图片</string>
+    <string name="pref_receive_pic_summar">如果选中，你的设备在2G/3G/4G下页会自动接收图片，会耗费一定流量。</string>
+    <string name="pref_show_notify_title">通知显示消息内容</string>
+    <string name="pref_show_notify_summar">如果选中，在接收到消息通知时通知栏会显示消息内容。</string>
+    <string name="pref_show_lockscreen_title">锁屏显示消息弹框</string>
+    <string name="pref_show_lockscreen_summar">如果选中，在设备锁屏时收到通知，会覆盖锁屏，显示通知界面。</string>
+    <string name="pref_quit_msg_title">退出后仍然接收消息通知</string>
+    <string name="pref_quit_msg_summar">如果选中，程序在退出时会在后台运行，接收最新消息，以免错过重要信息。</string>
+    <string name="pref_quit_btn">退出当前账号</string>
 
     <!-- Description of PhysicalWeb experiment setting in the Settings screen. BLE stands for Bluetooth Low Energy.-->
     <string name="pref_nearby_summary">Enables the PhysicalWeb BLE experiment in the Map screen, which performs BLE scans to show you PhysicalWeb tags near you (requires Bluetooth).</string>
@@ -791,7 +811,8 @@
     <string name="title_session_feedback">Session Feedback</string>
 
     <!-- Label for Settings activity -->
-    <string name="title_settings">Settings</string>
+    <string name="title_settings">设置</string>
+    <string name="title_talking">聊天</string>
 
     <!-- Chooser dialog text when the user is selecting an application with which to share something -->
     <string name="title_share">Share using</string>
