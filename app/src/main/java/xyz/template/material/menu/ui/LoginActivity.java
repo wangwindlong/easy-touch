@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
+import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
 
 import android.os.Build;
@@ -29,6 +30,13 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.turbomanage.httpclient.BasicHttpClient;
+import com.turbomanage.httpclient.ConsoleRequestLogger;
+import com.turbomanage.httpclient.HttpResponse;
+import com.turbomanage.httpclient.RequestLogger;
+
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -66,13 +74,14 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
-    private UserLoginTask mAuthTask = null;
+//    private UserLoginTask mAuthTask = null;
 
     // UI references.
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+    private boolean isLoading = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,7 +133,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
      * errors are presented and no actual login attempt is made.
      */
     public void attemptLogin(int type) {
-        if (mAuthTask != null) {
+        if (isLoading) {
             return;
         }
 
@@ -165,6 +174,24 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
+
+            AndroidHttpClient httpClient = AndroidHttpClient.newInstance("");
+            //实现将请求 的参数封装封装到HttpEntity中。
+                        UrlEncodedFormEntity entity=new UrlEncodedFormEntity(list, encode);
+                         //使用HttpPost请求方式
+                        HttpPost httpPost=new HttpPost(path);
+                         //设置请求参数到Form中。
+                        httpPost.setEntity(entity);
+                ParameterMap params = httpClient.newParams().add("q", "GOOG");
+                httpClient.setMaxRetries(3);
+                httpClient.get("/finance", params, new AsyncCallback() {
+                        public void onComplete(HttpResponse httpResponse) {
+                                System.out.println(httpResponse.getBodyAsString());
+                            }
+                        public void onError(Exception e) {
+                               e.printStackTrace();
+                          }
+            });
             mAuthTask = new UserLoginTask(email, password, type);
             mAuthTask.execute((Void) null);
         }
