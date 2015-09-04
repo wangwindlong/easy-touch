@@ -823,37 +823,34 @@ public abstract class BaseActivity extends ActionBarActivity implements
         Intent intent;
         Toast.makeText(this, "goToNavDrawerItem item="+item, Toast.LENGTH_SHORT).show();
         switch (item) {
-//            case NAVDRAWER_ITEM_MY_SCHEDULE:
-//                intent = new Intent(this, MyScheduleActivity.class);
-//                startActivity(intent);
-//                finish();
-//                break;
+            case NAVDRAWER_ITEM_MY_SCHEDULE:
+                intent = new Intent(this, TalkActivity.class);
+                startActivity(intent);
+                finish();
+                break;
             case NAVDRAWER_ITEM_EXPLORE:
                 intent = new Intent(this, MainActivity.class);
                 startActivity(intent);
+                finish();
                 break;
             case NAVDRAWER_ITEM_MAP:
                 intent = new Intent(this,TalkActivity.class);
                 startActivity(intent);
+                finish();
                 break;
-//            case NAVDRAWER_ITEM_SOCIAL:
-//                intent = new Intent(this, SocialActivity.class);
-//                startActivity(intent);
-//                finish();
-//                break;
-//            case NAVDRAWER_ITEM_EXPERTS_DIRECTORY:
-//                intent = new Intent(this, ExpertsDirectoryActivity.class);
-//                startActivity(intent);
-//                finish();
-//                break;
-//            case NAVDRAWER_ITEM_PEOPLE_IVE_MET:
-//                intent = new Intent(this, PeopleIveMetActivity.class);
-//                startActivity(intent);
-//                finish();
-//                break;
-//            case NAVDRAWER_ITEM_SIGN_IN:
-//                signInOrCreateAnAccount();
-//                break;
+            case NAVDRAWER_ITEM_SOCIAL:
+                intent = new Intent(this, TalkActivity.class);
+                startActivity(intent);
+                finish();
+                break;
+            case NAVDRAWER_ITEM_VIDEO_LIBRARY:
+                intent = new Intent(this, TalkActivity.class);
+                startActivity(intent);
+                finish();
+                break;
+            case NAVDRAWER_ITEM_SIGN_IN:
+                signInOrCreateAnAccount();
+                break;
             case NAVDRAWER_ITEM_SETTINGS:
                 intent = new Intent(this, SettingsActivity.class);
                 startActivity(intent);
