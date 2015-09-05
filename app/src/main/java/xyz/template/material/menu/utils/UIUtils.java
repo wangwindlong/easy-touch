@@ -18,6 +18,7 @@ package xyz.template.material.menu.utils;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -42,6 +43,7 @@ import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.style.StyleSpan;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -52,6 +54,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Formatter;
+import java.util.List;
 import java.util.TimeZone;
 import java.util.regex.Pattern;
 
@@ -444,7 +447,7 @@ public class UIUtils {
     }
 
     public static int setColorAlpha(int color, float alpha) {
-        int alpha_int = Math.min(Math.max((int)(alpha * 255.0f), 0), 255);
+        int alpha_int = Math.min(Math.max((int) (alpha * 255.0f), 0), 255);
         return Color.argb(alpha_int, Color.red(color), Color.green(color), Color.blue(color));
     }
 
@@ -535,5 +538,17 @@ public class UIUtils {
                 ((0 - 0.213f) * sat + 0.213f) * a, ((0 - 0.715f) * sat + 0.715f) * a, ((1 - 0.072f) * sat + 0.072f) * a, 0, Color.blue(sessionColor) * (1 - a),
                 0, 0, 0, 0, 255
         });
+    }
+
+
+    static ActivityManager am;
+    public static String getRunningActivity(Context context) {
+        if (am == null) {
+            am = (ActivityManager) context.getSystemService(context.ACTIVITY_SERVICE);
+        }
+        List<ActivityManager.RunningTaskInfo> taskInfo = am.getRunningTasks(1);
+        Log.d("topActivity", "CURRENT Activity ::" + taskInfo.get(0).topActivity.getClassName());
+        ComponentName componentInfo = taskInfo.get(0).topActivity;
+        return componentInfo.getClassName();
     }
 }

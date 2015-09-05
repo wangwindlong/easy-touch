@@ -521,7 +521,7 @@ public class SessionsFragment extends Fragment implements
             // preparing the database from the bootstrap data, which should only take a few
             // seconds.
             mEmptyView.setVisibility(View.GONE);
-            mLoadingView.setVisibility(View.VISIBLE);
+            mLoadingView.setVisibility(View.GONE);
         } else if (ScheduleContract.Sessions.isUnscheduledSessionsInInterval(mCurrentUri)) {
             // Showing sessions in a given interval, so say "No sessions in this time slot."
             mEmptyView.setText(R.string.no_matching_sessions_in_interval);

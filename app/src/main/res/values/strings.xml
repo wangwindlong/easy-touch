@@ -1,5 +1,6 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="app_name">IMDemo</string>
+    <string name="app_name">云之讯-王云龙</string>
+    <string name="talk_list_label">会话列表</string>
     <string name="phone_digits">0123456789</string>
     <string name="nick_digits">abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789</string>
 
@@ -7,7 +8,15 @@
     <string name="action_settings">Settings</string>
 
 
-
+    <string name="account_color">账户颜色</string>
+    <string name="account_color_name_green">绿色</string>
+    <string name="account_color_name_orange">橙色</string>
+    <string name="account_color_name_red">红色</string>
+    <string name="account_color_name_blue">蓝色</string>
+    <string name="account_color_name_indigo">靛青色</string>
+    <string name="account_color_name_teal">深青色</string>
+    <string name="account_color_name_blue_grey">蓝灰色</string>
+    <string name="account_color_name_cyan">青色</string>
 
 
     <string name="eula_legal_text">Your EULA text here.</string>
@@ -43,10 +52,11 @@
 
     <!-- Shown in the 'About' window of the app. -->
     <string name="about_body"><![CDATA[
-        <b>Google I/O 2014</b><br>
+        <b>云之讯比赛demo-王云龙(个人开发者)</b><br>
         Version %s<br><br>
-        <a href="http://m.google.com/utos">Terms of Service</a><br><br>
-        <a href="http://www.google.com/policies/privacy/">Privacy Policy</a>
+        <a href="http://www.ucpaas.com/">云之讯官网</a><br><br>
+        <a href="tel:400-097-0020">400-097-0020</a><br><br>
+        <a href="tel:18667141169">联系作者</a>
     ]]></string>
 
     <!-- Shown as a link in the About screen of the app; user can click to see the EULA. -->
@@ -141,7 +151,7 @@
     <string name="decline">Decline</string>
 
     <!-- Menu item that brings up the application's About screen -->
-    <string name="description_about">About</string>
+    <string name="description_about">关于</string>
 
     <!-- Menu item that allows user to add a session to their schedule -->
     <string name="description_add_schedule">Add to schedule</string>
@@ -158,15 +168,15 @@
     <string name="description_captions">Captions</string>
 
     <!-- Menu item that allows user to configure the conference WiFi on their device. -->
-    <string name="description_configure_wifi">Configure Wi-Fi</string>
+    <string name="description_configure_wifi">设置wifi</string>
 
-    <string name="description_debug" translatable="false">Debug and tests</string>
+    <string name="description_debug" translatable="false">测试模式</string>
 
     <!-- Menu item that takes the user to a page that shows a list of Google I/O Extended events. -->
-    <string name="description_i_o_extended">I/O Extended</string>
+    <string name="description_i_o_extended">会话扩展</string>
 
     <!-- Menu item that takes the user to the conference venue map screen -->
-    <string name="description_map">Map</string>
+    <string name="description_map">地图</string>
 
     <!-- Menu item that allows user to turn on or turn off the output of a video to a
     second screen. -->
@@ -174,7 +184,7 @@
 
     <!-- Menu item that allows user to reload the data in the current screen so they see
     the most up-to-date version from the server. -->
-    <string name="description_refresh">Refresh</string>
+    <string name="description_refresh">刷新</string>
 
     <!-- Menu item that allows the user to remove the currently session from their schedule. -->
     <string name="description_remove_schedule">Remove from schedule</string>
@@ -397,6 +407,7 @@
 
     <!-- Menu item to open a list of current and past I/O videos [CHAR_LIMIT=20] -->
     <string name="navdrawer_item_video_library">视频</string>
+    <string name="about_test">云之讯测试demo，其他功能正在开发中，敬请期待</string>
 
     <!-- Text indicator that appears below the user's name, showing that they are
     attending the conference in person in San Francisco. -->
@@ -774,7 +785,7 @@
     <string name="times_shown_in_tz">All times shown in <xliff:g id="timezone">%1$s</xliff:g></string>
 
     <!-- Title text for dialog screen about the application -->
-    <string name="title_about">About</string>
+    <string name="title_about">关于</string>
 
     <string name="title_activity_ble" translatable="false">Ble Activity</string>
 
@@ -850,5 +861,8 @@
 
     <!-- Toast failure message if the user's wifi couldn't be updated -->
     <string name="wifi_install_error_message">Sorry, unable to update WiFi configuration</string>
-    <string name="description_i_o_hunt">I/O Hunt</string>
+    <string name="description_i_o_hunt">新增会话</string>
+
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -36,6 +37,14 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.yzxIM.IMManager;
+import com.yzxIM.data.MSGTYPE;
+import com.yzxIM.data.db.ChatMessage;
+import com.yzxIM.data.db.ConversationInfo;
+import com.yzxIM.data.db.SingleChat;
+import com.yzxIM.listener.IConversationListener;
+import com.yzxIM.listener.MessageListener;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -53,11 +62,15 @@ import xyz.template.material.menu.ui.widget.chat.MessageAdapter;
 import xyz.template.material.menu.ui.widget.chat.MessageInputToolBox;
 import xyz.template.material.menu.ui.widget.chat.OnOperationListener;
 import xyz.template.material.menu.ui.widget.chat.Option;
+import xyz.template.material.menu.utils.FileUtils;
+import xyz.template.material.menu.utils.PrefUtils;
 import xyz.template.material.menu.utils.UIUtils;
 
+import static xyz.template.material.menu.utils.LogUtils.LOGD;
+import static xyz.template.material.menu.utils.LogUtils.LOGE;
 import static xyz.template.material.menu.utils.LogUtils.makeLogTag;
 
-public class TalkDetailFragment extends Fragment {
+public class TalkDetailFragment extends Fragment implements MessageListener {
     private static final String TAG = makeLogTag(TalkDetailFragment.class);
 
     private static final int HERO_GROUP_ID = 1337;
@@ -65,9 +78,26 @@ public class TalkDetailFragment extends Fragment {
     private MessageInputToolBox box;
     private ListView listView;
     private MessageAdapter adapter;
+    private String toId = "";
+    private String myId = "";
 
-    public static TalkDetailFragment newInstance() {
-        return new TalkDetailFragment();
+    public static TalkDetailFragment newInstance(String toid) {
+        TalkDetailFragment fragment = new TalkDetailFragment();
+        Bundle args = new Bundle();
+        args.putString("toid", toid);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        if (getArguments() != null) {
+            toId = getArguments().getString("toid", "18667141169");
+        }
+        IMManager.getInstance(getActivity()).setSendMsgListener(this);
+        myId = PrefUtils.getUserInfo(getActivity()).getPhone();
+        LOGE(TAG, "toId="+toId+",myId="+myId);
+        super.onCreate(savedInstanceState);
     }
 
     @Override
@@ -78,8 +108,18 @@ public class TalkDetailFragment extends Fragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         initMessageInputToolBox(view);
+        listView = (ListView) view.findViewById(R.id.messageListview);
+        adapter = new MessageAdapter(getActivity(), new ArrayList<Message>());
+        listView.setAdapter(adapter);
 
-        initListView(view);
+        listView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                box.hide();
+                return false;
+            }
+        });
+//        initListView(view);
     }
 
     @Override
@@ -87,45 +127,98 @@ public class TalkDetailFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
     }
 
+    @Override
+    public void onSendMsgRespone(ChatMessage chatMessage) {
+//        boolean isSUccess = IMManager.getInstance(getActivity()).sendmessage(msg);
+//        handleUpdate(chatMessage.getContent(), isSUccess, Message.MSG_TYPE_TEXT,
+//                myId, "avatar", toId, "avatar", true, isSUccess);
+        LOGE(TAG, "onSendMsgRespone chatMessage="+chatMessage);
+    }
+
+    @Override
+    public void onReceiveMessage(List list) {
+        LOGE(TAG, "onReceiveMessage list="+list);
+        for (Object object : list) {
+            final ChatMessage chatMessage = (ChatMessage) object;
+            final Message reMessage = new Message(getmsgType(chatMessage.getMsgType()), 1, toId, "avatar", myId, "avatar",
+                    chatMessage.getContent(),
+                    false, true, new Date()
+            );
+
+            adapter.getData().add(reMessage);
+            listView.setSelection(listView.getBottom());
+        }
+
+    }
+
+    @Override
+    public void onDownloadAttachedProgress(String s, String s1, int i, int i1) {
+
+    }
+
+    private int getmsgType(MSGTYPE msgtype) {
+        switch (msgtype) {
+            case MSG_DATA_TEXT:
+                return  Message.MSG_TYPE_TEXT;
+            case MSG_DATA_IMAGE:
+                return  Message.MSG_TYPE_PHOTO;
+            case MSG_DATA_VOICE:
+                return  Message.MSG_TYPE_VOICE;
+            case MSG_DATA_VIDEO:
+                return  Message.MSG_TYPE_VIDEO;
+            case MSG_DATA_SYSTEM:
+                return  Message.MSG_TYPE_SYSTEM;
+            default:return Message.MSG_TYPE_TEXT;
+        }
+    }
+
+    private void handleUpdate(String content, boolean success, int msgType, String fromUserName,
+                              String fromUserAvatar, String toUserName, String toUserAvatar,
+                              Boolean isSend, Boolean sendSucces) {
+        Message message = new Message(msgType, success ? Message.MSG_STATE_SUCCESS : Message.MSG_STATE_FAIL,
+                fromUserName, fromUserAvatar, toUserName, toUserAvatar, content, isSend, sendSucces, new Date());
+        adapter.getData().add(message);
+        listView.setSelection(listView.getBottom());
+    }
 
     @SuppressLint("ShowToast")
     private void initMessageInputToolBox(View rootView){
         box = (MessageInputToolBox) rootView.findViewById(R.id.messageInputToolBox);
         box.setOnOperationListener(new OnOperationListener() {
-
             @Override
             public void send(String content) {
-
-                System.out.println("===============" + content);
-
-                Message message = new Message(0, 1, "Tom", "avatar", "Jerry", "avatar", content, true, true, new Date());
-
-
-                adapter.getData().add(message);
-                listView.setSelection(listView.getBottom());
-
-                //Just demo
-                createReplayMsg(message);
+                ChatMessage msg = new SingleChat();
+                msg.setTargetId(toId);
+                msg.setSenderId(myId);
+                msg.setMsgType(MSGTYPE.MSG_DATA_TEXT);//设置消息类型为文本
+                msg.setContent(content); //设置消息内容
+                boolean isSUccess = IMManager.getInstance(getActivity()).sendmessage(msg);
+                handleUpdate(content, isSUccess, Message.MSG_TYPE_TEXT,
+                        myId, "avatar", toId, "avatar", true, isSUccess);
             }
 
             @Override
             public void selectedFace(String content) {
 
-                System.out.println("===============" + content);
-                Message message = new Message(Message.MSG_TYPE_FACE, Message.MSG_STATE_SUCCESS, "Tomcat", "avatar", "Jerry", "avatar", content, true, true, new Date());
-                adapter.getData().add(message);
-                listView.setSelection(listView.getBottom());
-
-                //Just demo
-                createReplayMsg(message);
+                String path = FileUtils.rootDirPath + "/" + content;
+                LOGD(TAG, "selectedFace path="+path);
+                FileUtils.saveBitmapToFile(BitmapFactory.decodeResource(getResources(),
+                                getResources().getIdentifier(content, "drawable", getActivity().getPackageName())),
+                        content);
+                ChatMessage msg = new SingleChat();
+                msg.setTargetId(toId);
+                msg.setSenderId(myId);
+                msg.setMsgType(MSGTYPE.MSG_DATA_IMAGE);//设置消息类型为文本
+                msg.setContent(path); //设置缩量图片路径
+                msg.setPath(path); //设置图片路径
+                boolean isSUccess = IMManager.getInstance(getActivity()).sendmessage(msg);
+                handleUpdate(content, isSUccess, Message.MSG_TYPE_FACE,
+                        myId, "avatar", toId, "avatar", true, isSUccess);
             }
 
 
             @Override
             public void selectedFuncation(int index) {
-
-                System.out.println("===============" + index);
-
                 switch (index) {
                     case 0:
                         //do some thing
@@ -182,8 +275,6 @@ public class TalkDetailFragment extends Fragment {
 
 
     private void initListView(View rootView){
-        listView = (ListView) rootView.findViewById(R.id.messageListview);
-
         //create Data
         Message message = new Message(Message.MSG_TYPE_TEXT, Message.MSG_STATE_SUCCESS, "Tom", "avatar", "Jerry", "avatar", "Hi", false, true, new Date(System.currentTimeMillis() - (1000 * 60 * 60 * 24) * 8));
         Message message1 = new Message(Message.MSG_TYPE_TEXT, Message.MSG_STATE_SUCCESS, "Tom", "avatar", "Jerry", "avatar", "Hello World", true, true, new Date(System.currentTimeMillis() - (1000 * 60 * 60 * 24)* 8));
@@ -203,18 +294,6 @@ public class TalkDetailFragment extends Fragment {
         messages.add(message5);
         messages.add(message6);
         messages.add(message7);
-
-        adapter = new MessageAdapter(getActivity(), messages);
-        listView.setAdapter(adapter);
-        adapter.notifyDataSetChanged();
-
-        listView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                box.hide();
-                return false;
-            }
-        });
 
     }
 

@@ -88,23 +88,25 @@ public class HelpUtils {
                     HelpUtils.showOpenSourceLicenses(getActivity());
                 }
             }, 0, licensesLink.length(), 0);
-            aboutBody.append("\n\n");
-            aboutBody.append(licensesLink);
+//            aboutBody.append("\n\n");
+//            aboutBody.append(licensesLink);
 
-            SpannableString eulaLink = new SpannableString(getString(R.string.about_eula));
-            eulaLink.setSpan(new ClickableSpan() {
-                @Override
-                public void onClick(View view) {
-                    HelpUtils.showEula(getActivity());
-                }
-            }, 0, eulaLink.length(), 0);
+//            SpannableString eulaLink = new SpannableString(getString(R.string.about_eula));
+//            eulaLink.setSpan(new ClickableSpan() {
+//                @Override
+//                public void onClick(View view) {
+//                    HelpUtils.showEula(getActivity());
+//                }
+//            }, 0, eulaLink.length(), 0);
+//            aboutBody.append("\n\n");
+//            aboutBody.append(eulaLink);
             aboutBody.append("\n\n");
-            aboutBody.append(eulaLink);
-
+            aboutBody.append(getString(R.string.about_test));
             LayoutInflater layoutInflater = (LayoutInflater) getActivity().getSystemService(
                     Context.LAYOUT_INFLATER_SERVICE);
             TextView aboutBodyView = (TextView) layoutInflater.inflate(R.layout.dialog_about, null);
             aboutBodyView.setText(aboutBody);
+//            aboutBodyView.setText(R.string.about_test);
             aboutBodyView.setMovementMethod(new LinkMovementMethod());
 
             return new AlertDialog.Builder(getActivity())

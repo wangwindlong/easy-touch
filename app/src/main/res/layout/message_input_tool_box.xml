@@ -40,7 +40,8 @@
             android:layout_marginBottom="4dp"
             android:background="@drawable/ic_add_black"
             android:paddingLeft="8dp"
-            android:paddingRight="8dp" />
+            android:paddingRight="8dp"
+             />
 
         <Button
             android:id="@+id/sendButton"
@@ -49,10 +50,12 @@
             android:layout_gravity="bottom"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="4dp"
-            android:text="Send"
-            android:textColor="#ffffffff"
+            android:text="发送"
+            android:background="?android:selectableItemBackground"
             android:textSize="15sp"
-            android:visibility="gone" />
+            android:textColor="#80000000"
+            android:visibility="gone"
+            />
     </LinearLayout>
 
     <RelativeLayout

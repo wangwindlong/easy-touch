@@ -18,6 +18,9 @@ package xyz.template.material.menu.utils;
 
 //import com.google.api.client.util.IOUtils;
 
+import android.graphics.Bitmap;
+import android.os.Environment;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -31,6 +34,20 @@ import java.nio.charset.Charset;
  * Utilities and constants related to files
  */
 public class FileUtils {
+    public static String rootDirPath = getSDPath() + "/yzximdemo";
+
+
+    public static String getSDPath(){
+        File sdDir = null;
+        boolean sdCardExist = Environment.getExternalStorageState()
+                .equals(Environment.MEDIA_MOUNTED);   //判断sd卡是否存在
+        if (sdCardExist) {
+            sdDir = Environment.getExternalStorageDirectory();//获取跟目录
+            return sdDir.toString();
+        }
+        return null;
+    }
+
     public static void writeFile(String data, File file) throws IOException {
         writeFile(data.getBytes(Charset.forName("UTF-8")), file);
     }
@@ -50,4 +67,60 @@ public class FileUtils {
 //        bos.close();
 //        return new String(contents, Charset.forName("UTF-8"));
 //    }
+
+    public static void saveBitmapToFile(Bitmap bitmap, String name) {
+        FileOutputStream fstream = null;
+        BufferedOutputStream bStream = null;
+        try {
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream);
+            byte[] byteArray = stream.toByteArray();
+
+            File file = new File(rootDirPath);
+            if (!file.exists()) {
+                file.mkdirs();
+            }
+            File imageFile = new File(rootDirPath, name);
+
+            fstream = new FileOutputStream(imageFile);
+            bStream = new BufferedOutputStream(fstream);
+            bStream.write(byteArray);
+            if (bStream != null) {
+                bStream.close();
+                bStream = null;
+            }
+        } catch (Exception e) {
+
+        } finally {
+
+        }
+    }
+
+    public static void saveBitmapToPathFile(Bitmap bitmap, String pathname) {
+        FileOutputStream fstream = null;
+        BufferedOutputStream bStream = null;
+        try {
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream);
+            byte[] byteArray = stream.toByteArray();
+
+            File file = new File(pathname);
+            if (!file.exists()) {
+                file.mkdirs();
+            }
+            File imageFile = new File(pathname);
+
+            fstream = new FileOutputStream(imageFile);
+            bStream = new BufferedOutputStream(fstream);
+            bStream.write(byteArray);
+            if (bStream != null) {
+                bStream.close();
+                bStream = null;
+            }
+        } catch (Exception e) {
+
+        } finally {
+
+        }
+    }
 }

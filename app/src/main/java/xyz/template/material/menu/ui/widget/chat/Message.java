@@ -6,7 +6,10 @@ public class Message {
 	public final static int MSG_TYPE_TEXT 	= 0;
 	public final static int MSG_TYPE_PHOTO 	= 1;
 	public final static int MSG_TYPE_FACE 	= 2;
-	
+	public final static int MSG_TYPE_VOICE 	= 3;
+	public final static int MSG_TYPE_VIDEO 	= 4;
+	public final static int MSG_TYPE_SYSTEM 	= 5;
+
 	public final static int MSG_STATE_SENDING 	= 0;
 	public final static int MSG_STATE_SUCCESS 	= 1;
 	public final static int MSG_STATE_FAIL 		= 2;

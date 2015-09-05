@@ -41,6 +41,7 @@
     <dimen name="list_item_action_margin">2dp</dimen>
     <dimen name="action_button_padding">10dp</dimen>
     <dimen name="spinner_left_padding">16dp</dimen>
+    <dimen name="contact_elevation">1dp</dimen>
 
     <!-- body content -->
     <dimen name="element_spacing_normal">8dp</dimen>

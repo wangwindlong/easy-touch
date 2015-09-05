@@ -762,12 +762,14 @@ public abstract class BaseActivity extends ActionBarActivity implements
                 return true;
 
             case R.id.menu_i_o_hunt:
-                launchIoHunt();
+//                launchIoHunt();
+                //todo wangyl need to show select friends dialog
+                startActivity(new Intent(this, TalkActivity.class));
                 return true;
 
             case R.id.menu_debug:
 //                if (BuildConfig.DEBUG) {
-//                    startActivity(new Intent(this, DebugActionRunnerActivity.class));
+                    startActivity(new Intent(this, TalkActivity.class));
 //                }
                 return true;
 
@@ -849,7 +851,9 @@ public abstract class BaseActivity extends ActionBarActivity implements
                 finish();
                 break;
             case NAVDRAWER_ITEM_SIGN_IN:
-                signInOrCreateAnAccount();
+                intent = new Intent(this, TalkActivity.class);
+                startActivity(intent);
+                finish();
                 break;
             case NAVDRAWER_ITEM_SETTINGS:
                 intent = new Intent(this, SettingsActivity.class);
@@ -1413,7 +1417,7 @@ public abstract class BaseActivity extends ActionBarActivity implements
                     if (!syncActive && !syncPending) {
                         mManualSyncRequest = false;
                     }
-                    onRefreshingStateChanged(syncActive || (mManualSyncRequest && syncPending));
+                    onRefreshingStateChanged(false);
                 }
             });
         }
